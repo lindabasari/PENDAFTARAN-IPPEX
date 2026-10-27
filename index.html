@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DASHBOARD PENDAFTARAN IPPEX PROJEK AKHIR JKM PSAS</title>
+  <title>DASHBOARD PENDAFTARAN IPPEX — Projek Akhir JKM PSAS</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -21,7 +21,7 @@
 
   <main>
 
-    <!-- STAT CARDS -->
+    <!-- ── STAT CARDS ── -->
     <section class="stats-row">
       <div class="stat-card">
         <span class="stat-icon">📁</span>
@@ -53,7 +53,7 @@
       </div>
     </section>
 
-    <!-- BORANG PENDAFTARAN -->
+    <!-- ── BORANG PENDAFTARAN ── -->
     <section class="card" id="sectionForm">
       <div class="card-header">
         <h2>📝 Daftar Projek Baru</h2>
@@ -95,7 +95,10 @@
           </fieldset>
 
           <div class="form-group">
-            <label>👥 Ahli Kumpulan <span class="req">*</span></label>
+            <div class="ahli-label-row">
+              <label>👥 Ahli Kumpulan <span class="req">*</span></label>
+              <span class="ahli-counter" id="ahliCounter">1 ahli</span>
+            </div>
             <div id="senaraiAhli">
               <div class="ahli-row" data-idx="0">
                 <span class="ahli-num">1</span>
@@ -116,12 +119,13 @@
       </div>
     </section>
 
-    <!-- SENARAI PROJEK -->
+    <!-- ── SENARAI PROJEK ── -->
     <section class="card" id="sectionSenarai">
       <div class="senarai-head">
         <h2>📋 Senarai Projek Berdaftar</h2>
         <div class="toolbar">
           <input type="search" id="carian" placeholder="🔍 Cari projek / ahli / penyelia…" />
+          <button class="btn-export no-print" id="btnExport">📥 Eksport CSV</button>
           <button class="btn-ghost no-print" id="btnCetak">🖨 Cetak</button>
           <button class="btn-danger-ghost no-print" id="btnPadamSemua">🗑 Padam Semua</button>
         </div>
@@ -129,8 +133,14 @@
 
       <p class="sort-info">
         📊 Disusun mengikut isipadu terbesar → terkecil &nbsp;|&nbsp;
-        <strong>No. 1 = Projek Terbesar</strong>
+        <strong>No. 1 = Projek Paling Besar</strong>
       </p>
+
+      <!-- Size bar visualiser -->
+      <div id="sizeBarSection" hidden>
+        <p class="sizebar-title">📏 Perbandingan Saiz Projek (Isipadu Relatif)</p>
+        <div id="sizeBarList" class="sizebar-list"></div>
+      </div>
 
       <div id="tiadaProjek" class="tiada-data">
         <p>⚠️ Tiada projek berdaftar. Sila isi borang di atas.</p>
@@ -161,7 +171,7 @@
     <p>DASHBOARD PENDAFTARAN IPPEX — PROJEK AKHIR JKM PSAS &copy; 2025 &nbsp;|&nbsp; Data disimpan secara tempatan (localStorage)</p>
   </footer>
 
-  <!-- Modal: Padam satu projek -->
+  <!-- ── Modal: Padam satu projek ── -->
   <div id="modalPadam" class="modal-overlay" hidden>
     <div class="modal-box">
       <h3>⚠️ Sahkan Padam</h3>
@@ -173,7 +183,7 @@
     </div>
   </div>
 
-  <!-- Modal: Padam semua -->
+  <!-- ── Modal: Padam semua ── -->
   <div id="modalPadamSemua" class="modal-overlay" hidden>
     <div class="modal-box">
       <h3>⚠️ Padam Semua Rekod</h3>
@@ -185,7 +195,64 @@
     </div>
   </div>
 
-  <!-- Toast notification -->
+  <!-- ── Modal: Edit projek ── -->
+  <div id="modalEdit" class="modal-overlay" hidden>
+    <div class="modal-box modal-box-lg">
+      <h3>✏️ Kemaskini Projek</h3>
+
+      <form id="formEdit" novalidate autocomplete="off">
+        <input type="hidden" id="editId" />
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="editTajuk">Tajuk Projek <span class="req">*</span></label>
+            <input type="text" id="editTajuk" required />
+          </div>
+          <div class="form-group">
+            <label for="editPenyelia">Nama Penyelia <span class="req">*</span></label>
+            <input type="text" id="editPenyelia" required />
+          </div>
+        </div>
+
+        <fieldset class="form-group">
+          <legend>📐 Saiz Dimensi (cm) <span class="req">*</span></legend>
+          <div class="dimensi-row">
+            <div class="dim-field">
+              <label for="editPanjang">Panjang</label>
+              <input type="number" id="editPanjang" min="0.1" step="0.1" required />
+            </div>
+            <span class="times">×</span>
+            <div class="dim-field">
+              <label for="editLebar">Lebar</label>
+              <input type="number" id="editLebar" min="0.1" step="0.1" required />
+            </div>
+            <span class="times">×</span>
+            <div class="dim-field">
+              <label for="editTinggi">Tinggi</label>
+              <input type="number" id="editTinggi" min="0.1" step="0.1" required />
+            </div>
+            <div class="vol-preview" id="editVolPreview"></div>
+          </div>
+        </fieldset>
+
+        <div class="form-group">
+          <div class="ahli-label-row">
+            <label>👥 Ahli Kumpulan <span class="req">*</span></label>
+            <span class="ahli-counter" id="editAhliCounter">1 ahli</span>
+          </div>
+          <div id="editSenaraiAhli"></div>
+          <button type="button" id="editBtnTambahAhli" class="btn-secondary">＋ Tambah Ahli</button>
+        </div>
+
+        <div class="modal-actions" style="margin-top:1.2rem;">
+          <button type="submit" class="btn-primary">💾 Simpan Perubahan</button>
+          <button type="button" id="btnTutupEdit" class="btn-ghost">Batal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Toast notification ── -->
   <div id="toast" class="toast" role="alert" aria-live="polite"></div>
 
   <script src="app.js"></script>
